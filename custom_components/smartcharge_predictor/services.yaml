@@ -1,0 +1,34 @@
+retrain:
+  name: Retrain Model
+  description: "Retrain the machine learning model for a specific device using recorded charging history."
+  fields:
+    device_name:
+      name: Device Name
+      description: "The name of the device to retrain the model for."
+      required: true
+      example: "Apple Watch"
+
+export_data:
+  name: Export Data
+  description: "Export charging history data for a specific device as a CSV file."
+  fields:
+    device_name:
+      name: Device Name
+      description: "The name of the device to export data for."
+      required: true
+      example: "Apple Watch"
+
+import_history:
+  name: Import History
+  description: "Import historical charging data from Home Assistant recorder for the current device configuration."
+  fields:
+    hours:
+      name: Hours
+      description: "How far back to import in hours. If provided, takes precedence over days."
+      required: false
+      example: 24
+    days:
+      name: Days
+      description: "How far back to import in days. Used if hours is not provided."
+      required: false
+      example: 3

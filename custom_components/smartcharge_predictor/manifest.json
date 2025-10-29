@@ -1,0 +1,13 @@
+{
+  "domain": "smartcharge_predictor",
+  "name": "SmartCharge Predictor",
+  "version": "2025.10.1",
+  "requirements": ["scikit-learn>=1.0.0"],
+  "dependencies": ["recorder"],
+  "codeowners": ["@Geckom"],
+  "iot_class": "calculated",
+  "config_flow": true,
+  "integration_type": "helper",
+  "documentation": "https://github.com/geckom/smartcharge-predictor",
+  "issue_tracker": "https://github.com/geckom/smartcharge-predictor/issues"
+}

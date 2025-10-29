@@ -1,0 +1,108 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "SmartCharge Predictor Setup",
+        "description": "Configure your device charging prediction by selecting a battery sensor to monitor.",
+        "data": {
+          "battery_entity": "Battery Entity"
+        }
+      },
+      "device_details": {
+        "title": "Device Configuration",
+        "description": "Enter your device details and charger specifications.",
+        "data": {
+          "name": "Device Name",
+          "charger_power_w": "Charger Power (Watts)",
+          "battery_health": "Battery Health (%)",
+          "learn_from_history": "Learn from History"
+        }
+      },
+      "environment": {
+        "title": "Environment Sensors",
+        "description": "Optionally link temperature and humidity sensors for more accurate predictions.",
+        "data": {
+          "ambient_temp_entity": "Temperature Sensor",
+          "humidity_entity": "Humidity Sensor",
+          "optimized_charging_entity": "Optimized Charging Entity"
+        }
+      },
+      "optimized_charging": {
+        "title": "Optimized charging",
+        "description": "Indicate if the device uses optimized charging.",
+        "data": {
+          "optimized_charging_enabled": "Optimized charging enabled"
+        }
+      },
+      "options": {
+        "title": "Options",
+        "description": "Modify device configuration settings.",
+        "data": {
+          "charger_power_w": "Charger Power (Watts)",
+          "battery_health": "Battery Health (%)",
+          "learn_from_history": "Learn from History",
+          "scan_interval": "Scan Interval (seconds)",
+          "max_history_samples": "Max History Samples"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to connect to the device",
+      "invalid_entity": "The selected entity is not valid or accessible",
+      "invalid_number": "Please enter a valid number",
+      "unknown": "An unknown error occurred"
+    },
+    "abort": {
+      "already_configured": "This device is already configured",
+      "not_supported": "This device is not supported"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SmartCharge Predictor Options",
+        "description": "Modify the configuration for this device."
+      }
+    }
+  },
+  "services": {
+    "retrain": {
+      "name": "Retrain Model",
+      "description": "Retrain the machine learning model for a specific device using recorded charging history.",
+      "fields": {
+        "device_name": {
+          "name": "Device Name",
+          "description": "The name of the device to retrain the model for."
+        }
+      }
+    },
+    "export_data": {
+      "name": "Export Data",
+      "description": "Export charging history data for a specific device as a CSV file.",
+      "fields": {
+        "device_name": {
+          "name": "Device Name",
+          "description": "The name of the device to export data for."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "charge_time_remaining": {
+        "name": "Charge Time Remaining"
+      },
+      "full_charge_time": {
+        "name": "Full Charge Time"
+      },
+      "predicted_rate": {
+        "name": "Predicted Charge Rate"
+      }
+    },
+    "binary_sensor": {
+      "optimized_charging": {
+        "name": "Optimized Charging"
+      }
+    }
+  }
+}

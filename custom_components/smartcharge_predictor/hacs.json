@@ -1,0 +1,7 @@
+{
+  "name": "SmartCharge Predictor",
+  "domains": ["smartcharge_predictor"],
+  "iot_class": "calculated",
+  "homeassistant": "2024.6.0"
+}
+
