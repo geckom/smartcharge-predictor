@@ -2,7 +2,7 @@
   "domain": "smartcharge_predictor",
   "name": "SmartCharge Predictor",
   "version": "2025.10.1",
-  "requirements": ["scikit-learn>=1.0.0"],
+  "requirements": ["scikit-learn>=1.0.0,<1.7.0"],
   "dependencies": ["recorder"],
   "codeowners": ["@Geckom"],
   "iot_class": "calculated",

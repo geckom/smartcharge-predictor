@@ -209,7 +209,11 @@ action:
 
 ### Requirements
 
-scikit-learn (>=1.0.0) is automatically installed when you set up this integration. No manual installation required.
+scikit-learn (>=1.0.0,<1.7.0) is automatically installed when you set up this integration. If installation fails on your environment (e.g., missing build tools on Python 3.13), the integration will continue to work using the empirical model only. You can manually install the compatible wheel inside your Home Assistant environment:
+
+```bash
+pip install "scikit-learn>=1.0.0,<1.7.0"
+```
 
 ### Model Types
 
@@ -282,6 +286,7 @@ entities:
 - Ensure learn_from_history is enabled in integration options
 - Integration will fall back to empirical model if ML unavailable
 - If scikit-learn installation failed, restart Home Assistant to retry installation
+- On Python 3.13, versions >=1.7.0 may build from source; this integration pins to <1.7.0 to use pre-built wheels. If needed, install manually with: `pip install "scikit-learn>=1.0.0,<1.7.0"`
 
 **Learning from history disabled**
 - If learn_from_history is disabled, history recording continues but model training is skipped
