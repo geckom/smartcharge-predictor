@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- Battery outline -->
+  <rect x="2" y="7" width="15" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  <!-- Battery terminal -->
+  <rect x="17" y="10" width="1.5" height="4" rx="0.5" fill="currentColor"/>
+  <!-- Charging indicator/bolt -->
+  <path d="M12 9 L8 15 L12 15 L10 19 L14 13 L10 13 Z" fill="currentColor"/>
+  <!-- Prediction curve/arrow pointing up-right -->
+  <path d="M6 18 L10 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M10 14 L10 10 L14 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+</svg>
+
