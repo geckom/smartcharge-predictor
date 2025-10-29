@@ -207,22 +207,74 @@ action:
 
 ## Machine Learning
 
-### Requirements
+### Overview
 
-scikit-learn (>=1.0.0,<1.7.0) is automatically installed when you set up this integration. If installation fails on your environment (e.g., missing build tools on Python 3.13), the integration will continue to work using the empirical model only. You can manually install the compatible wheel inside your Home Assistant environment:
+This integration works perfectly fine **without** scikit-learn using the empirical model. However, installing scikit-learn enables optional machine learning features that can improve prediction accuracy over time by learning from your device's charging history.
+
+### Benefits of Installing scikit-learn
+
+When scikit-learn is available, the integration can:
+
+- **Learn from your device**: Trains ML models (LinearRegression or RandomForest) on your device's historical charging data
+- **Improve accuracy over time**: ML models adapt to your specific device, charger, and charging patterns
+- **Automatic model selection**: Compares LinearRegression, RandomForest, and Empirical models and automatically selects the best performing one
+- **Better handling of complex patterns**: ML models can capture non-linear relationships and complex charging behaviors that the empirical model cannot
+
+**Without scikit-learn**: The integration uses the empirical model, which provides good baseline predictions based on piecewise charging rates and environmental corrections.
+
+### Installing scikit-learn (Optional)
+
+scikit-learn is **optional** and not required for the integration to function. The integration will automatically detect if scikit-learn is available and enable ML features accordingly.
+
+#### Home Assistant OS (Supervisor)
+
+1. Install the **SSH & Web Terminal** add-on from the Add-on Store
+2. Open the SSH & Web Terminal add-on
+3. Run the following command:
 
 ```bash
 pip install "scikit-learn>=1.0.0,<1.7.0"
 ```
 
+4. Restart Home Assistant
+
+#### Home Assistant Container (Docker)
+
+1. Access your Docker container (via SSH or direct access):
+
+```bash
+docker exec -it homeassistant bash
+```
+
+2. Run the pip install command:
+
+```bash
+pip install "scikit-learn>=1.0.0,<1.7.0"
+```
+
+3. Restart Home Assistant
+
+#### Home Assistant Core
+
+1. Activate your Python virtual environment (if using one)
+2. Run:
+
+```bash
+pip install "scikit-learn>=1.0.0,<1.7.0"
+```
+
+3. Restart Home Assistant
+
+**Note**: On Python 3.13, versions >=1.7.0 may require building from source. This integration pins to <1.7.0 to use pre-built wheels for easier installation.
+
 ### Model Types
 
-1. **Empirical Model**: Uses piecewise charging rates with environmental corrections
-2. **Learned Model**: Uses scikit-learn (LinearRegression or RandomForest) trained on historical data
+1. **Empirical Model**: Uses piecewise charging rates with environmental corrections (always available)
+2. **Learned Model**: Uses scikit-learn (LinearRegression or RandomForest) trained on historical data (requires scikit-learn)
 
 ### Model Selection
 
-The integration automatically selects the best model based on accuracy:
+When scikit-learn is available, the integration automatically selects the best model based on accuracy:
 - Trains both LinearRegression and RandomForest models
 - Evaluates empirical model accuracy on the same test set
 - Selects the model with the highest R² score
@@ -282,11 +334,12 @@ entities:
 - Models automatically select best algorithm (LinearRegression, RandomForest, or Empirical)
 
 **ML features not working**
-- Check logs for import errors
+- scikit-learn is **optional** - the integration works perfectly fine without it using the empirical model
+- ML features (learning from history) require scikit-learn to be installed - see installation instructions above
 - Ensure learn_from_history is enabled in integration options
-- Integration will fall back to empirical model if ML unavailable
-- If scikit-learn installation failed, restart Home Assistant to retry installation
-- On Python 3.13, versions >=1.7.0 may build from source; this integration pins to <1.7.0 to use pre-built wheels. If needed, install manually with: `pip install "scikit-learn>=1.0.0,<1.7.0"`
+- Integration automatically falls back to empirical model if scikit-learn is unavailable (this is expected behavior)
+- To enable ML features, install scikit-learn following the instructions in the Machine Learning section above
+- Check logs for scikit-learn import errors if you've installed it but ML features aren't working
 
 **Learning from history disabled**
 - If learn_from_history is disabled, history recording continues but model training is skipped
