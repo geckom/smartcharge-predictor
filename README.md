@@ -1,180 +1,8 @@
-SmartCharge Predictor
-=====================
+# SmartCharge Predictor
 
-Overview
---------
+## Overview
+
 SmartCharge Predictor is a Home Assistant custom component that adds predictive charging entities for any battery sensor you configure. It estimates the time remaining to full charge, the timestamp when charge will complete, and the current predicted charging rate. Under the hood, it combines a reliable empirical model with optional machine learning (LinearRegression and RandomForest) trained on your device's historical data to improve accuracy over time. It also supports optimized charging detection (via entity, setting, or behavior), immediate updates on state change, configurable scan interval, and safe, debounced history storage.
-
-Use cases
----------
-- Power control automations:
-  - Turn off a charger or smart plug automatically when the device is predicted to reach 100%.
-  - Pause charging when the predicted full charge time falls within off-peak windows.
-- Smart notifications:
-  - Notify when it is a good time to start charging so the device reaches 100% by the time you leave for work or go to bed.
-  - Alert if charging is slower than expected (e.g., poor cable, low-power adapter, high temperature).
-- Energy and battery health:
-  - Avoid holding the battery at 100% overnight by predicting completion time and stopping earlier.
-  - Track charging performance over time to detect degradation or environment-related slowdowns.
-
-Entities
---------
-For each configured device, the integration creates three sensor entities and one binary sensor:
-
-- sensor.{device_name}_charge_time_remaining: Minutes until 100% (numeric, minutes)
-- sensor.{device_name}_full_charge_time: Timestamp for 100% (timestamp, UTC)
-- sensor.{device_name}_predicted_rate: Percent per minute (numeric, %/min)
-- binary_sensor.{device_name}_optimized_charging: Optimized charging status (binary, on/off)
-
-Configuration (UI config flow)
-------------------------------
-Required:
-- device_name: Friendly name for the device
-- battery_entity: The battery level entity to monitor (numeric state)
-
-Optional:
-- ambient_temp_entity: Temperature entity (numeric)
-- humidity_entity: Humidity entity (numeric)
-- optimized_charging_entity: Binary sensor entity for optimized charging status (optional, falls back to config setting or inferred from behavior)
-- charger_power: Charger power in watts (defaults to 20)
-- battery_health: Battery health percent (defaults to 100)
-- optimized_charging_enabled: Whether the device uses optimized charging behavior (true/false, used if entity not provided)
-- learn_from_history: Enable ML learning from historical data (defaults to true)
-- scan_interval: Update interval in seconds (defaults to 60, range 30-300)
-
-Behavior and history
---------------------
-- The coordinator refreshes at configurable intervals (default: 60 seconds, configurable 30-300 seconds)
-- Updates are triggered immediately when battery state changes (in addition to periodic polling)
-- Samples are recorded when the battery percentage increases (only if learn_from_history is enabled)
-- Stored data includes: timestamp (UTC), battery_pct, optional temperature and humidity, rate_pct_per_min (derived from recorder or runtime), charger_power_w, optimized_charging, battery_health
-- ML training requires enough positive‑rate samples; otherwise the empirical model is used
-- When learn_from_history is disabled, history recording continues but model training is skipped
-- History saves are debounced (5 minutes) to reduce I/O, with immediate saves on shutdown
-
-Services
---------
-
-smartcharge_predictor.retrain
-- Purpose: Trigger model retraining for a device
-- Parameters (either):
-  - entity_id (string, preferred): the configured battery entity
-  - device_name (string, legacy)
-- Note: Requires learn_from_history to be enabled in integration options
-- Examples:
-  ```yaml
-  # Standalone service call (Developer Tools)
-  service: smartcharge_predictor.retrain
-  data:
-    entity_id: sensor.matts_watch_battery
-
-  # As action in automation/script (preferred: by entity_id)
-  action:
-    - service: smartcharge_predictor.retrain
-      data:
-        entity_id: sensor.matts_watch_battery
-
-  # Legacy: by device_name
-  action:
-    - service: smartcharge_predictor.retrain
-      data:
-        device_name: "Watch"
-  ```
-
-smartcharge_predictor.export_data
-- Purpose: Export history to CSV for a device
-- Fields:
-  - device_name (string, required)
-- Examples:
-  ```yaml
-  # Standalone service call (Developer Tools)
-  service: smartcharge_predictor.export_data
-  data:
-    device_name: "Watch"
-
-  # As action in automation/script
-  action:
-    - service: smartcharge_predictor.export_data
-      data:
-        device_name: "Watch"
-  ```
-
-smartcharge_predictor.import_history
-- Purpose: One‑time import from recorder history to seed training data
-- Fields:
-  - hours (number, optional): How far back to import in hours
-  - days (number, optional): How far back to import in days (used if hours not provided)
-- Uses configured entities/values when enriching samples:
-  - battery_entity (required)
-  - ambient_temp_entity (optional)
-  - humidity_entity (optional)
-  - charger_power, battery_health, optimized_charging_enabled
-- Examples:
-  ```yaml
-  # Standalone service call (Developer Tools)
-  service: smartcharge_predictor.import_history
-  data:
-    days: 3
-
-  # As action in automation/script
-  action:
-    - service: smartcharge_predictor.import_history
-      data:
-        days: 3
-  ```
-
-Full example with configured enrichment inputs
----------------------------------------------
-Given this integration configuration (via UI, shown here as reference):
-```yaml
-# SmartCharge Predictor (UI-managed; example values)
-device_name: "Watch"
-battery_entity: sensor.matts_watch_battery
-ambient_temp_entity: sensor.living_room_temperature
-humidity_entity: sensor.living_room_humidity
-charger_power: 20
-battery_health: 98
-optimized_charging_enabled: true
-```
-
-You can import recorder history like this (existing samples in the selected window are always cleared first):
-```yaml
-# Standalone service call (Developer Tools)
-service: smartcharge_predictor.import_history
-data:
-  days: 3
-
-# Or as action in automation/script
-action:
-  - service: smartcharge_predictor.import_history
-    data:
-      days: 3
-```
-
-The importer will enrich each imported sample with:
-- `temperature`: value from `sensor.living_room_temperature` at the sample timestamp (if available)
-- `humidity`: value from `sensor.living_room_humidity` at the sample timestamp (if available)
-- `charger_power_w`: 20
-- `battery_health`: 98
-- `optimized_charging`: true
-
-Notes:
-- If both `hours` and `days` are provided, `hours` takes precedence.
-- Only positive battery percentage increases generate samples (used to compute `rate_pct_per_min`).
-
-Logging
--------
-To enable debug logging, add to configuration.yaml:
-```yaml
-logger:
-  logs:
-    custom_components.smartcharge_predictor: debug
-```
-
-Notes
------
-- Full charge timestamps are timezone‑aware UTC datetimes to satisfy Home Assistant timestamp sensors.
-- If your battery entity reports whole percentages, history will still build as the percent ticks up over time.
 
 ## Features
 
@@ -185,8 +13,13 @@ Notes
 - **Multiple Sensors**: Provides time remaining, full charge time, and charge rate
 - **Easy Configuration**: Simple UI-based setup process
 - **Data Export**: Export charging history for analysis
+- **Smart Updates**: Immediate updates on battery state changes plus configurable polling
 
 ## Installation
+
+### Requirements
+
+- Home Assistant 2024.6 or later
 
 ### Manual Installation
 
@@ -230,6 +63,7 @@ This integration will be available through HACS in the future.
 | Device Name | Name for your device | Yes | - |
 | Battery Entity | Home Assistant battery sensor | Yes | - |
 | Battery Health | Battery health percentage | Yes | 100% |
+| Charger Power | Charger power in watts | No | 20 |
 | Learn from History | Enable ML learning | Yes | True |
 | Temperature Sensor | Ambient temperature sensor | No | - |
 | Humidity Sensor | Ambient humidity sensor | No | - |
@@ -238,47 +72,77 @@ This integration will be available through HACS in the future.
 | Scan Interval | Update interval in seconds (30-300) | No | 60 |
 | Max History Samples | Maximum samples to store per device (100-100000) | No | 10000 (~30 days) |
 
+**Max History Samples**: Controls how much historical charging data is stored per device. The default of 10,000 samples provides approximately 30 days of coverage at maximum scan interval (300s). At 60s interval, this covers about 7 days of continuous charging data. Older samples are automatically removed (FIFO) when the limit is reached.
+
+### Behavior and History
+
+- The coordinator refreshes at configurable intervals (default: 60 seconds, configurable 30-300 seconds)
+- Updates are triggered immediately when battery state changes (in addition to periodic polling)
+- Samples are recorded when the battery percentage increases (only if learn_from_history is enabled)
+- Stored data includes: timestamp (UTC), battery_pct, optional temperature and humidity, rate_pct_per_min (derived from recorder or runtime), charger_power_w, optimized_charging, battery_health
+- ML training requires enough positive-rate samples; otherwise the empirical model is used
+- When learn_from_history is disabled, history recording continues but model training is skipped
+- History saves are debounced (5 minutes) to reduce I/O, with immediate saves on shutdown
+
 ## Entities
 
-For each configured device, the integration creates four entities:
+For each configured device, the integration creates **four entities (three sensors + one binary sensor)**:
 
 ### Charge Time Remaining
+
 - **Entity ID**: `sensor.{device_name}_charge_time_remaining`
 - **Unit**: minutes
 - **Description**: Estimated time until device reaches 100% charge
 - **Attributes**: Battery health, charger power, temperature, humidity, model type, last updated
 
 ### Full Charge Time
+
 - **Entity ID**: `sensor.{device_name}_full_charge_time`
 - **Unit**: timestamp
-- **Description**: Predicted datetime when device will be fully charged
+- **Description**: Predicted datetime when device will be fully charged (UTC)
 - **Attributes**: Time remaining in minutes, last updated
 
 ### Predicted Charge Rate
+
 - **Entity ID**: `sensor.{device_name}_predicted_rate`
 - **Unit**: %/min
 - **Description**: Current effective charging rate
 - **Attributes**: Calculated rate, battery percentage, model accuracy, empirical accuracy, sample count, model type
 
 ### Optimized Charging
+
 - **Entity ID**: `binary_sensor.{device_name}_optimized_charging`
 - **Type**: Binary sensor
 - **Description**: Whether optimized charging is currently active
 - **States**: on/off
 - **Device Class**: battery_charging
 
+**Note**: Full charge timestamps are timezone-aware UTC datetimes to satisfy Home Assistant timestamp sensors. If your battery entity reports whole percentages, history will still build as the percent ticks up over time.
+
 ## Services
 
 ### Retrain Model
-Retrain the machine learning model using historical data.
+
+Trigger model retraining for a device using recorded charging history. Requires `learn_from_history` to be enabled in integration options.
+
+**Parameters** (provide either):
+- `entity_id` (string, preferred): The configured battery entity
+- `device_name` (string, legacy): The device name
+
+**Examples**:
 
 ```yaml
-# Standalone service call (Developer Tools)
+# Standalone service call (Developer Tools) - using entity_id (preferred)
 service: smartcharge_predictor.retrain
 data:
   entity_id: sensor.apple_watch_battery
 
-# Or as action in automation/script
+# Using device_name (legacy)
+service: smartcharge_predictor.retrain
+data:
+  device_name: "Apple Watch"
+
+# As action in automation/script
 action:
   - service: smartcharge_predictor.retrain
     data:
@@ -286,7 +150,13 @@ action:
 ```
 
 ### Export Data
-Export charging history as CSV file.
+
+Export charging history to CSV file for a specific device.
+
+**Parameters**:
+- `device_name` (string, required): The device name
+
+**Examples**:
 
 ```yaml
 # Standalone service call (Developer Tools)
@@ -294,11 +164,45 @@ service: smartcharge_predictor.export_data
 data:
   device_name: "Apple Watch"
 
-# Or as action in automation/script
+# As action in automation/script
 action:
   - service: smartcharge_predictor.export_data
     data:
       device_name: "Apple Watch"
+```
+
+### Import History
+
+One-time import from Home Assistant recorder history to seed training data. Uses configured entities/values when enriching samples (battery_entity, ambient_temp_entity, humidity_entity, charger_power, battery_health, optimized_charging_enabled).
+
+**Parameters**:
+- `hours` (number, optional): How far back to import in hours. If provided, takes precedence over days.
+- `days` (number, optional): How far back to import in days. Used if hours not provided.
+
+**Notes**:
+- Existing samples in the selected window are always cleared first
+- If both `hours` and `days` are provided, `hours` takes precedence
+- Only positive battery percentage increases generate samples (used to compute `rate_pct_per_min`)
+- Each imported sample is enriched with temperature and humidity values from configured entities at the sample timestamp (if available)
+
+**Examples**:
+
+```yaml
+# Standalone service call (Developer Tools)
+service: smartcharge_predictor.import_history
+data:
+  days: 3
+
+# Import last 24 hours
+service: smartcharge_predictor.import_history
+data:
+  hours: 24
+
+# As action in automation/script
+action:
+  - service: smartcharge_predictor.import_history
+    data:
+      days: 3
 ```
 
 ## Machine Learning
@@ -326,6 +230,20 @@ The integration automatically selects the best model based on accuracy:
 - Training occurs in the background every 24 hours (only if learn_from_history is enabled)
 - Manual retraining available via service call (requires learn_from_history to be enabled)
 - Training compares all three models (LinearRegression, RandomForest, Empirical) and selects the best
+
+## Use Cases
+
+- **Power control automations**:
+  - Turn off a charger or smart plug automatically when the device is predicted to reach 100%
+  - Pause charging when the predicted full charge time falls within off-peak windows
+
+- **Smart notifications**:
+  - Notify when it is a good time to start charging so the device reaches 100% by the time you leave for work or go to bed
+  - Alert if charging is slower than expected (e.g., poor cable, low-power adapter, high temperature)
+
+- **Energy and battery health**:
+  - Avoid holding the battery at 100% overnight by predicting completion time and stopping earlier
+  - Track charging performance over time to detect degradation or environment-related slowdowns
 
 ## Lovelace Card Example
 
